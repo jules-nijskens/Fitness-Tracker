@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Model from 'react-body-highlighter';
 import { 
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
@@ -87,6 +88,22 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   DumbbellRows: "6gvmcqr226U",
   PlankShoulderTaps: "QOCn3_iOAro",
   PogoJumps: "j0nl5dWuqN4"
+};
+
+const EXERCISE_MUSCLES: Record<string, { muscles: string[], type: 'anterior' | 'posterior' }> = {
+  LatMachine: { muscles: ['upper-back', 'biceps'], type: 'posterior' },
+  ChestMachine: { muscles: ['chest', 'triceps', 'front-deltoids'], type: 'anterior' },
+  LegPress: { muscles: ['quadriceps', 'gluteal', 'hamstring'], type: 'anterior' },
+  ReverseButterfly: { muscles: ['back-deltoids', 'upper-back'], type: 'posterior' },
+  LegExtension: { muscles: ['quadriceps'], type: 'anterior' },
+  LegCurl: { muscles: ['hamstring'], type: 'posterior' },
+  CalfRaises: { muscles: ['calves'], type: 'posterior' },
+  BackExtension: { muscles: ['lower-back', 'hamstring', 'gluteal'], type: 'posterior' },
+  GobletSquats: { muscles: ['quadriceps', 'gluteal', 'abs'], type: 'anterior' },
+  SingleLegRDL: { muscles: ['hamstring', 'gluteal', 'lower-back'], type: 'posterior' },
+  DumbbellRows: { muscles: ['upper-back', 'biceps', 'back-deltoids'], type: 'posterior' },
+  PlankShoulderTaps: { muscles: ['abs', 'obliques', 'front-deltoids', 'triceps'], type: 'anterior' },
+  PogoJumps: { muscles: ['calves'], type: 'posterior' }
 };
 
 function App() {
@@ -268,67 +285,80 @@ function App() {
         <form onSubmit={handleSubmitWorkout} className="card">
           {currentExercises.map((ex) => {
             const last = getLastKnown(ex);
+            const muscleData = EXERCISE_MUSCLES[ex];
             return (
               <div key={ex} className="exercise">
-                <label 
-                  className={EXERCISE_VIDEOS[ex] ? 'clickable-label' : ''}
-                  onClick={() => {
-                    if (EXERCISE_VIDEOS[ex]) {
-                      setShowVideo(showVideo === ex ? null : ex);
-                    }
-                  }}
-                >
-                  {EXERCISE_LABELS[ex]}
-                  {EXERCISE_VIDEOS[ex] && (
-                    <span className="video-icon"> 📽️</span>
-                  )}
-                  {last && (
-                    <span className="last-known-subtle">
-                      {" "}(Last: {last.weight ? `${last.weight}kg` : ''}{last.weight && last.times ? ' / ' : ''}{last.times ? `${last.times}` : ''}{last.rating ? ` / ${last.rating}` : ''})
-                    </span>
-                  )}
-                  {EXERCISE_TIPS[ex] && (
-                    <div className="exercise-tip">{EXERCISE_TIPS[ex]}</div>
-                  )}
-                </label>
+                <div className="exercise-main">
+                  <label 
+                    className={EXERCISE_VIDEOS[ex] ? 'clickable-label' : ''}
+                    onClick={() => {
+                      if (EXERCISE_VIDEOS[ex]) {
+                        setShowVideo(showVideo === ex ? null : ex);
+                      }
+                    }}
+                  >
+                    {EXERCISE_LABELS[ex]}
+                    {EXERCISE_VIDEOS[ex] && (
+                      <span className="video-icon"> 📽️</span>
+                    )}
+                    {last && (
+                      <span className="last-known-subtle">
+                        {" "}(Last: {last.weight ? `${last.weight}kg` : ''}{last.weight && last.times ? ' / ' : ''}{last.times ? `${last.times}` : ''}{last.rating ? ` / ${last.rating}` : ''})
+                      </span>
+                    )}
+                    {EXERCISE_TIPS[ex] && (
+                      <div className="exercise-tip">{EXERCISE_TIPS[ex]}</div>
+                    )}
+                  </label>
 
-                {showVideo === ex && EXERCISE_VIDEOS[ex] && (
-                  <div className="video-container">
-                    <iframe 
-                      width="100%" 
-                      height="315" 
-                      src={`https://www.youtube.com/embed/${EXERCISE_VIDEOS[ex]}?autoplay=1`}
-                      title="Exercise Video" 
-                      frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowFullScreen
-                    ></iframe>
+                  {showVideo === ex && EXERCISE_VIDEOS[ex] && (
+                    <div className="video-container">
+                      <iframe 
+                        width="100%" 
+                        height="315" 
+                        src={`https://www.youtube.com/embed/${EXERCISE_VIDEOS[ex]}?autoplay=1`}
+                        title="Exercise Video" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  )}
+                  <div className="input-row">
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Weight (kg)"
+                      value={formWeights[ex] || ''}
+                      onChange={(e) => setFormWeights({ ...formWeights, [ex]: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Sets x Reps (e.g. 3x12)"
+                      value={formTimes[ex] || ''}
+                      onChange={(e) => setFormTimes({ ...formTimes, [ex]: e.target.value })}
+                    />
+                    <select
+                      value={formRatings[ex] || ''}
+                      onChange={(e) => setFormRatings({ ...formRatings, [ex]: e.target.value })}
+                    >
+                      <option value="">Rating</option>
+                      <option value="Easy">Easy</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+                {muscleData && (
+                  <div className="exercise-model">
+                    <Model
+                      data={[{ name: ex, muscles: muscleData.muscles }]}
+                      style={{ width: '4rem' }}
+                      type={muscleData.type}
+                      highlightedColors={['#007aff']}
+                    />
                   </div>
                 )}
-                <div className="input-row">
-                  <input
-                    type="number"
-                    step="0.1"
-                    placeholder="Weight (kg)"
-                    value={formWeights[ex] || ''}
-                    onChange={(e) => setFormWeights({ ...formWeights, [ex]: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Sets x Reps (e.g. 3x12)"
-                    value={formTimes[ex] || ''}
-                    onChange={(e) => setFormTimes({ ...formTimes, [ex]: e.target.value })}
-                  />
-                  <select
-                    value={formRatings[ex] || ''}
-                    onChange={(e) => setFormRatings({ ...formRatings, [ex]: e.target.value })}
-                  >
-                    <option value="">Rating</option>
-                    <option value="Easy">Easy</option>
-                    <option value="Normal">Normal</option>
-                    <option value="Hard">Hard</option>
-                  </select>
-                </div>
               </div>
             );
           })}

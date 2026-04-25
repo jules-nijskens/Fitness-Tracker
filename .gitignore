@@ -67,3 +67,9 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Build output
+dist/
+
+# OS files
+.DS_Store
